@@ -13,16 +13,16 @@ import ConfigParser
 # # email_pass = config.get('email','pass')
 
 
-# Change these values to your desired sale page (the selector and price check were tested on Amazon).
 BASE_URL = "https://in.bookmyshow.com/buytickets/"
 SMTP_URL = "smtp.gmail.com:587"
-XPATH_SELECTOR = '/html/body/section/div/div/ul/li/div/div/div/a/strong/text()'
 # XPATH_SELECTOR = '/html/body/section/div/div/ul/li/div/div/div/a/strong'
+BASE_XPATH_SELECTOR = '/html/body/section/div/div/ul/li'
+#                      /html/body/section/div/div/ul/li /div[2]/div[1]/a
 SLEEP_INTERVAL = 10
-#ITEMS is a list of lists, storing ASINs and their maximum prices
-# ITEMS = ['batman-v-superman-dawn-of-justice-imax-3d-bengaluru/movie-bang-ET00038215-MT/20160324', 'batman-v-superman-dawn-of-justice-imax-3d-bengaluru/movie-bang-ET00038215-MT/20160325']
-MOVIE = 'batman-v-superman-dawn-of-justice-imax-3d-bengaluru/movie-bang-ET00038215-MT/20160324'
-# MOVIE = 'batman-v-superman-dawn-of-justice-imax-3d-bengaluru/movie-bang-ET00038215-MT/20160325'
+# MOVIE is the relative link to the movie
+MOVIE = 'batman-v-superman-dawn-of-justice-imax-3d-bengaluru/movie-bang-ET00038215-MT/'
+# DATE is the date you want it in. Format: YYYYMMDD
+DATE = '20160324'
 
 def send_email(price):
     global BASE_URL
@@ -46,12 +46,26 @@ def send_email(price):
         print("Message has been sent.")
 
 while True:
-    #item[0] is the item's ASIN while item[1] is that item's maximum price
-    r = requests.get(BASE_URL + MOVIE)
+    r = requests.get(BASE_URL + MOVIE + DATE)
     tree = html.fromstring(r.text)
     try:
-        print tree.xpath(XPATH_SELECTOR)
-        # print movie
+        theatre_names = tree.xpath(BASE_XPATH_SELECTOR + '/@data-name')
+        theatre_id = tree.xpath(BASE_XPATH_SELECTOR + '/@data-id')
+
+        for i,val in enumerate(theatre_id):
+
+            # movie_timings = tree.xpath(BASE_XPATH_SELECTOR + '/div[2]/div[@data-online="Y"]/a/@data-showtime-code')
+            movie_timings = tree.xpath(BASE_XPATH_SELECTOR + '[@data-id="'+val+'"]/div/div/a/@data-showtime-code')
+            # movie_timings = tree.xpath(BASE_XPATH_SELECTOR + '/div[@class="body"]/div/a/@data-showtime-code')
+            
+
+            # movie_timings = tree.xpath(BASE_XPATH_SELECTOR + '/div[@class="body"]/div/a/@data-date-time')
+            # theatre_names = tree.xpath(BASE_XPATH_SELECTOR + '/@data-name')
+            print val, movie_timings
+        #     movie_timings_links = tree.xpath(BASE_XPATH_SELECTOR + '/div[@class="body"]/div/a/@href')
+        #     # for i,val in enumerate(movie_timings):
+        #     print movie_timings, movie_timings_links
+        # print movie_names
         # url = movie.xpath('@href').extract()[0]
         # print url
         # theatre = movie.xpath('.//strong/text()').extract()[0]
@@ -67,5 +81,6 @@ while True:
     # else:
     #     print("Price is {}. Ignoring...".format(price))
 
-    print "Sleeping for {} seconds".format(SLEEP_INTERVAL)
+    print "----"
+    # print "Sleeping for {} seconds".format(SLEEP_INTERVAL)
     time.sleep(SLEEP_INTERVAL)
