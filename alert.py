@@ -49,19 +49,25 @@ while True:
     r = requests.get(BASE_URL + MOVIE + DATE)
     tree = html.fromstring(r.text)
     try:
+
         theatre_names = tree.xpath(BASE_XPATH_SELECTOR + '/@data-name')
         theatre_id = tree.xpath(BASE_XPATH_SELECTOR + '/@data-id')
 
         for i,val in enumerate(theatre_id):
 
             # movie_timings = tree.xpath(BASE_XPATH_SELECTOR + '/div[2]/div[@data-online="Y"]/a/@data-showtime-code')
-            movie_timings = tree.xpath(BASE_XPATH_SELECTOR + '[@data-id="'+val+'"]/div/div/a/@data-showtime-code')
+            all_movie_timings = tree.xpath(BASE_XPATH_SELECTOR + '[@data-id="'+val+'"]/div/div/a/@data-showtime-code')
+            active_movie_timings = tree.xpath(BASE_XPATH_SELECTOR + '[@data-id="'+val+'"]/div/div[@data-online="Y"]/a/@data-showtime-code')
             # movie_timings = tree.xpath(BASE_XPATH_SELECTOR + '/div[@class="body"]/div/a/@data-showtime-code')
-            
-
+            print val
+            for j,jval in enumerate(all_movie_timings):
+                if jval in active_movie_timings:
+                    print "    "+jval+" Available"
+                else:
+                    print "    "+jval+" Not Available"
             # movie_timings = tree.xpath(BASE_XPATH_SELECTOR + '/div[@class="body"]/div/a/@data-date-time')
             # theatre_names = tree.xpath(BASE_XPATH_SELECTOR + '/@data-name')
-            print val, movie_timings
+            
         #     movie_timings_links = tree.xpath(BASE_XPATH_SELECTOR + '/div[@class="body"]/div/a/@href')
         #     # for i,val in enumerate(movie_timings):
         #     print movie_timings, movie_timings_links
